@@ -5,6 +5,9 @@ from world import World
 import random
 from ast import literal_eval
 
+from graph import MazeGraph
+from util import Stack
+
 # Load world
 world = World()
 
@@ -25,11 +28,144 @@ world.print_rooms()
 
 player = Player(world.starting_room)
 
-# Fill this out with directions to walk
+
 # traversal_path = ['n', 'n']
 traversal_path = []
 
+opposite_move_map = { 'n' : 's', 'e' : 'w', 's' : 'n', 'w' : 'e'}
 
+
+def get_direction(graph, room_id, visited):
+    unexplored_exits = []
+    for direction in graph.vertices[room_id]:
+        if graph.vertices[room_id][direction] is "?":
+            return direction
+    #         unexplored_exits.append(direction)
+    #
+    # print(f"Room{room_id} Unexplored Exits{unexplored_exits}")
+    # room = world.rooms[room_id]
+    # for exit in unexplored_exits:
+    #     if room.get_room_in_direction(exit) not in visited:
+    #         return exit
+
+    return None
+
+
+import time
+# Fill this out with directions to walk
+def traverse(starting_room_id = 0, steps = 3000):
+
+    # traversal_path.append(starting_room_id)
+
+    visited = set()
+    stack = Stack()
+    # stack.push(0)
+
+    graph = MazeGraph()
+
+    vertex = starting_room_id
+    # graph.add_vertex(vertex)
+# depth first search to find the dead end
+# backtrack to find
+
+
+    while steps > 0:
+
+        # if steps % 5 == 0:
+        # time.sleep(2)
+        # generate graph
+        room_id = player.current_room.id
+
+        # if (vertex)
+        # visited.add(vertex)
+        visited.add(room_id)
+
+        # check if the vertex has been initialized
+        if room_id not in graph.vertices:
+            graph.add_vertex(room_id)
+            # find available direction
+            exits = player.current_room.get_exits()
+            # add to adjacent map
+            for ex in exits:
+                graph.vertices[room_id][ex] = '?'
+
+
+
+        # if len(exits) == 0:
+        #     # backtrack
+        #     last_move = stack.pop()
+        #     # move in opposite direction
+        if room_id == 0:
+            print('b')
+        # check graph
+        unexplored_exits = []
+        # check if the vertex has visited
+
+        for direction in graph.vertices[room_id]:
+            if graph.vertices[room_id][direction] is "?":
+                unexplored_exits.append(direction)
+
+        print(f"Room{room_id} Unexplored Exits{unexplored_exits}")
+        if len(unexplored_exits) > 0:
+            move_to = random.choice(unexplored_exits)
+        else:
+        # move_to = get_direction(graph, room_id, visited)
+        # if not move_to:
+            # visited.add(room_id)
+            move_to = opposite_move_map[stack.pop()]
+            player.travel(move_to, True)
+            traversal_path.append(move_to)
+            print(traversal_path)
+            steps -= 1
+            continue
+
+        print(move_to)
+
+
+        player.travel(move_to, True)
+
+
+        room_id_move_to = player.current_room.id
+
+        if room_id_move_to not in graph.vertices:
+            graph.add_vertex(room_id_move_to)
+
+        exits = player.current_room.get_exits()
+        # add to adjacent map
+        for ex in exits:
+            graph.vertices[room_id_move_to][ex] = '?'
+
+        graph.add_edge(room_id, room_id_move_to, move_to)
+        graph.add_edge(room_id_move_to, room_id, opposite_move_map[move_to])
+        # visited.add(room_id_move_to)
+        traversal_path.append(move_to)
+        print(traversal_path)
+        # store the move
+        stack.push(move_to)
+        steps -= 1
+
+        if len(graph.vertices) == len(world.rooms):
+            for ver in range(500):
+                for neighbor in graph.vertices[ver].values():
+                    if neighbor is "?":
+                        print("")
+
+            print(F"Maze Traversal Complete. Took {len(traversal_path)} Steps")
+            break
+
+
+
+
+
+
+
+# test moving one step
+traverse(0, 5000)
+
+
+
+
+print(traversal_path)
 
 # TRAVERSAL TEST
 visited_rooms = set()
@@ -51,12 +187,12 @@ else:
 #######
 # UNCOMMENT TO WALK AROUND
 #######
-player.current_room.print_room_description(player)
-while True:
-    cmds = input("-> ").lower().split(" ")
-    if cmds[0] in ["n", "s", "e", "w"]:
-        player.travel(cmds[0], True)
-    elif cmds[0] == "q":
-        break
-    else:
-        print("I did not understand that command.")
+# player.current_room.print_room_description(player)
+# while True:
+#     cmds = input("-> ").lower().split(" ")
+#     if cmds[0] in ["n", "s", "e", "w"]:
+#         player.travel(cmds[0], True)
+#     elif cmds[0] == "q":
+#         break
+#     else:
+#         print("I did not understand that command.")
